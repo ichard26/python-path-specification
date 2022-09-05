@@ -12,12 +12,20 @@ jobs:
   test:
     name: Test / ${{ matrix.python }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}-latest
+    continue-on-error: ${{ matrix.expected-failure }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu, macos, windows]
         python: ["3.7", "3.8", "3.9", "3.10", "3.11.0-rc - 3.11",
                   "pypy-3.7", "pypy-3.8", "pypy-3.9"]
+        expected-failure: [false]
+        include:
+          # Windows can't create and thus cannot test symlinks without
+          # admin permissions. Windows also has a broken realpath
+          # implementation which prevents recursion detection.
+          - os: windows
+            expected-failure: true
 
     steps:
       - uses: actions/checkout@v3
